@@ -42,16 +42,17 @@
                 "Parameters": {
                     "Prefix": {
                         "Ref": "Prefix"
-                    }
+                    },
+                    "email": "ilff8chen@gmail.com"
                 },
-                "TemplateURL": String,
+                "TemplateURL": "https://github.com/hche608/aws-cf-templates/raw/master/30-RESOURCES/hax3-init-core-resources.template",
                 "TimeoutInMinutes": 30
             }
         },
         "SecurityStack": {
             "Type": "AWS::CloudFormation::Stack",
             "Properties": {
-                "TemplateURL": String,
+                "TemplateURL": "https://github.com/hche608/aws-cf-templates/raw/master/00-IAM/hax3-init-security-group.template",
                 "TimeoutInMinutes": 30
             }
         },
@@ -61,16 +62,14 @@
                 "Parameters": {
                     "Prefix": {
                         "Ref": "Prefix"
-                    },
-                    "email": "ilff8chen@gmail.com"
+                    }
                 },
-                "TemplateURL": String,
+                "TemplateURL": "https://github.com/hche608/aws-cf-templates/raw/master/20-ROLES/hax3-init-core-role.template",
                 "TimeoutInMinutes": 30
             }
         },
         "ProjectRepo": {
             "Type": "AWS::CodeCommit::Repository",
-            "DeletionPolicy": "Retain",
             "Properties": {
                 "RepositoryDescription": {
                     "Fn::Sub": "This repository contains the ${Prefix}-${GivenName}-${Service} source code."
@@ -98,76 +97,6 @@
                 },
                 "VersioningConfiguration": {
                     "Status": "Enabled"
-                }
-            }
-        },
-        "KmsKey": {
-            "Type": "AWS::KMS::Key",
-            "DependsOn": [
-                "RootPipelineRole"
-            ],
-            "Properties": {
-                "Description": {
-                    "Fn::Sub": "This key created by ${Prefix}-${GivenName}-${Service}-project-stack and the key will be used by pipeline and s3."
-                },
-                "Enabled": "true",
-                "EnableKeyRotation": "false",
-                "KeyPolicy": {
-                    "Id": {
-                        "Fn::Sub": "alias/${Prefix}-${GivenName}-${Service}-kms-key-policy"
-                    },
-                    "Statement": [{
-                            "Sid": "Allow full access to cross account role.",
-                            "Effect": "Allow",
-                            "Principal": {
-                                "AWS": [{
-                                        "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:root"
-                                    },
-                                    {
-                                        "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/hax3-root-pipeline-role"
-                                    }
-                                ]
-                            },
-                            "Action": [
-                                "kms:*"
-                            ],
-                            "Resource": "*"
-                        },
-                        {
-                            "Sid": "Allow use of the key",
-                            "Effect": "Allow",
-                            "Principal": {
-                                "AWS": [{
-                                    "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/hax3-root-pipeline-role"
-                                }],
-                                "Service": [
-                                    "codepipeline.amazonaws.com"
-                                ]
-                            },
-                            "Action": [
-                                "kms:Encrypt",
-                                "kms:Decrypt",
-                                "kms:ReEncrypt*",
-                                "kms:GenerateDataKey*",
-                                "kms:DescribeKey"
-                            ],
-                            "Resource": "*"
-                        }
-                    ]
-                }
-            }
-        },
-        "KmsKeyAlias": {
-            "Type": "AWS::KMS::Alias",
-            "DependsOn": [
-                "KmsKey"
-            ],
-            "Properties": {
-                "AliasName": {
-                    "Fn::Sub": "alias/${Prefix}-${GivenName}-${Service}-kms-key-policy"
-                },
-                "TargetKeyId": {
-                    "Ref": "KmsKey"
                 }
             }
         },
